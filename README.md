@@ -19,7 +19,7 @@ The pipeline includes:
 
 4. Differential expression analysis using limma
 
-5.mVolcano plot visualization
+5. Volcano plot visualization
 
 6. Gene Ontology (GO) enrichment analysis
 
