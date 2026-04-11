@@ -4,7 +4,9 @@ R Code for Differential Gene Expression Analysis (Microarray Data)
 __Project Title__
 
 Differential Expression of Genes in Osteoarthritis (OA) and Normal Synovial Tissue
-https://alieu-csay.github.io/Gene-Expression-Analysis-R/
+
+Check the Full project:
+[https://alieu-csay.github.io/Gene-Expression-Analysis-R/](https://alieu-csay.github.io/Gene-Expression-Analysis-R/)
 
 Overview
 -----------------------------------------------------------------------------------------------------------------
@@ -14,15 +16,17 @@ The pipeline includes:
 
 1. Loading and preprocessing Affymetrix CEL files
 
-2. Background correction and normalization (RMA)
+2. QC and normalization (RMA)
+  
+3. EDA 
 
-3. Probe annotation
+5. Probe annotation
 
-4. Differential expression analysis using limma
+6. Differential expression analysis using limma
 
-5. Volcano plot visualization
+7. Volcano plot and Heatmap visualization
 
-6. Gene Ontology (GO) enrichment analysis
+8. Gene Ontology (GO) enrichment analysis
 
 Note: The workflow follows standard Bioconductor microarray analysis practices.
 
