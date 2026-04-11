@@ -1,24 +1,28 @@
-###DOWNLOADING AND LOADING REQUIRED PACKAGES 
+### PACKAGE INSTALLATION & LOADING
+# This block ensures all packages are compatible with R 4.4.0
 
-#Downloading and Loading Required Packages
+if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager")
 
-if (!require("BiocManager", quietly = TRUE))
-   install.packages("BiocManager")
+# Force update BiocManager for R 4.4.0
+if (BiocManager::version() != "3.19") {
+  BiocManager::install(version = "3.19", ask = FALSE, update = TRUE)
+}
 
-#From the Bioconductor
-#BiocManager::install("affy")
-#BiocManager::install("limma")
-#BiocManager::install("hgu133plus2.db")
-#BiocManager::install("AnnotationDbi")
-#BiocManager::install("clusterProfiler", version = "3.18")
-#BiocManager::install("pathview")
-#BiocManager::install("enrichplot")
+# List of required packages
+packages <- c("affy", "limma", "ggplot2", "hgu133plus2.db", "AnnotationDbi", 
+              "clusterProfiler", "enrichplot", "pheatmap", "plotly", "factoextra")
 
-#CRAN packages
-#install.packages("ggplot2")
-#install.packages("pheatmap")
+# Install missing packages
+install_if_missing <- function(p) {
+  if (!require(p, character.only = TRUE)) {
+    BiocManager::install(p, ask = FALSE)
+    library(p, character.only = TRUE)
+  }
+}
 
-#Loading the librarys 
+invisible(lapply(packages, install_if_missing))
+
+# Standard Loading
 library(affy)
 library(limma)
 library(ggplot2)
@@ -27,15 +31,17 @@ library(AnnotationDbi)
 library(clusterProfiler)
 library(enrichplot)
 library(pheatmap)
+library(plotly)
+library(factoextra)
 
 ###LOADING TARGETS FILE 
 #loading our target file 
-targets <- readTargets("/Users/ALIEU CSAY/Desktop/Masters Bioinformatics/Principles of Bioinformatics/E-portfolio/E_portfolio_ass/data.txt")
+targets <- readTargets("./data/data.txt")
 
 ###BACKGROUND CORRECTION AND NORMALISATION.
 #Loading the data and Normalisation 
 
-eset <- justRMA(filenames = targets$Sample_ID, celfile.path = "/Users/ALIEU CSAY/Desktop/Masters Bioinformatics/Principles of Bioinformatics/E-portfolio/E_portfolio_ass/input/")
+eset <- justRMA(filenames = targets$Sample_ID, celfile.path = "./data/input/")
 
 #Setting the coloum names to Title
 
@@ -94,44 +100,6 @@ Res$delabel <- NA
 Res$delabel[Res$deff.express.gene != "NO"] <- Res$SYMBOL [Res$deff.express.gene != "NO"]
 
 ## GENE ENRICHMENT ANALYSIS
-#Differential expression 
-
-#Generating a model matrix specifying your design 
-Group <- factor(targets$Condition, levels = c("Healthy", "Arthritis"))
-design <- model.matrix(~0 + Group)
-colnames(design) = levels(factor(Group))
-
-#Fit the model to the design 
-fit <- lmFit(eset, design)
-
-#Making contrast
-contrast <- makeContrasts('Arthritis-Healthy', levels = design)
-
-#Empirical Bayes model
-fit2 <- contrasts.fit(fit, contrast)
-fit2 <- eBayes(fit2)
-
-#Extracting our differential expressed results
-Res <- topTable(fit2, number=Inf, adjust.method = 'fdr')
-
-# Summary of our results
-Results <- decideTests(fit2)
-
-#creating a new coloum to classify our genes as upregulated or downregulated.
-
-Res$deff.express.gene <- "NO"
-# if log2FC > 0 and adj.pvalue < 0.05, set as "UP" 
-Res$deff.express.gene[Res$logFC > 0 & Res$adj.P.Val < 0.08] <- "UP"
-# if log2FC < 0 and adj.pvalue < 0.05, set as "DOWN"
-Res$deff.express.gene[Res$logFC < 0 & Res$adj.P.Val < 0.08] <- "DOWN"
-
-Res$delabel <- NA
-
-Res$delabel[Res$deff.express.gene != "NO"] <- Res$SYMBOL [Res$deff.express.gene != "NO"]
-
-```
-
-## GENE ENRICHMENT ANALYSIS
 #GO Gene Enrichment Analysis for the differential expressed gene
 
 #Define our universe gene symbols (total gene symbols differential expressed)
@@ -184,6 +152,20 @@ head(exprs(eset))
 #Boxplot of of our expression data after normalisation 
 boxplot(exprs(eset), main = "Expression data after normalisation", col = c("blue", "red"))
 
+### PCA PLOT
+# Prepare data for PCA (transpose so samples are rows)
+pca_data <- t(exprs(eset))
+pca_res <- prcomp(pca_data, scale. = TRUE)
+
+# Visualize PCA
+fviz_pca_ind(pca_res,
+             col.ind = Group, # Color by condition
+             palette = c("#00AFBB", "#FC4E07"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Condition",
+             repel = TRUE,
+             title = "PCA - Sample Clustering")
+
 ###RESULTS FOR ANNOTATION
 #list our keytypes
 keytypes(hgu133plus2.db)
@@ -201,7 +183,7 @@ dim(eset)
 head(Res)
 #showing the summary of the results. 
 summary(Results)
-#Volcano plot Differential expressed gene
+#Volcano plot Differential expressed gene (Static)
 ggplot(Res, aes(y = -log10(P.Value), x = logFC))+
 geom_text(data = subset(Res, logFC < -1 | logFC >  1),aes(label = delabel),nudge_y = 0.3, size = 2) +
 geom_point() + labs(y = "-log10(p-value)", x = "log2(Fold Change)") +
@@ -211,6 +193,32 @@ scale_colour_manual(values = c("red","yellow","blue")) +
 geom_vline(xintercept = c(-1, 1), colour = "red" ) +
 geom_hline(yintercept = -log10(0.08), colour = "green")+
 theme_minimal() 
+
+# Interactive Volcano plot
+p <- ggplot(Res, aes(y = -log10(P.Value), x = logFC, text = paste("Gene:", SYMBOL)))+
+  geom_point(aes(colour= deff.express.gene), alpha = 0.5) + 
+  scale_colour_manual(values = c("UP" = "red", "NO" = "lightgrey", "DOWN" = "blue")) +
+  geom_vline(xintercept = c(-1, 1), colour = "black", linetype = "dashed" ) +
+  geom_hline(yintercept = -log10(0.08), colour = "black", linetype = "dashed")+
+  labs(y = "-log10(p-value)", x = "log2(Fold Change)") +
+  theme_minimal()
+
+ggplotly(p, tooltip = "text")
+
+### HEATMAP OF TOP 50 DEGS
+# Select top 50 genes by adjusted p-value
+top50_genes <- head(Res[order(Res$adj.P.Val), ], 50)
+gene_matrix <- exprs(eset)[rownames(top50_genes), ]
+# Replace probe IDs with Gene Symbols
+rownames(gene_matrix) <- top50_genes$SYMBOL
+
+# Create heatmap
+pheatmap(gene_matrix, 
+         scale = "row", 
+         clustering_distance_rows = "correlation",
+         annotation_col = data.frame(Condition = targets$Condition, row.names = targets$Title),
+         main = "Top 50 Differentially Expressed Genes",
+         color = colorRampPalette(c("blue", "white", "red"))(100))
 
 
 ###RESULTS FOR GENE ENRICHMENT ANALYSIS.
@@ -222,5 +230,3 @@ p2
 #For downregulated genes 
 p3 <- dotplot(enrich_Down, showCategory=10) + ggtitle("Downregulated Gene ontolgy Enrichment analysis")
 p3
-
-

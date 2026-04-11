@@ -1,0 +1,21 @@
+Package: hgu133plus2.db
+Title: Affymetrix Affymetrix HG-U133_Plus_2 Array annotation data (chip
+        hgu133plus2)
+Description: Affymetrix Affymetrix HG-U133_Plus_2 Array annotation data (chip hgu133plus2) assembled using data from public repositories
+Version: 3.13.0
+Author: Marc Carlson
+Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
+Depends: R (>= 2.7.0), methods, AnnotationDbi (>= 1.53.2), org.Hs.eg.db
+        (>= 3.13.0)
+Suggests: DBI, annotate, RUnit
+Imports: methods, AnnotationDbi
+License: Artistic-2.0
+organism: Homo sapiens
+species: Human
+manufacturer: Affymetrix
+chipName: Affymetrix HG-U133_Plus_2 Array
+manufacturerUrl: http://www.affymetrix.com
+biocViews: ChipDb, AnnotationData, AffymetrixChip, Homo_sapiens,
+        hgu133plus2
+NeedsCompilation: no
+Packaged: 2021-05-19 02:39:48 UTC; ubuntu

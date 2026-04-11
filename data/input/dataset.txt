@@ -1,0 +1,15 @@
+Sample_ID,Title,Source,Condition
+GSM6265690_145614hp133a11.cel,NS01,Knee synovium ,Healthy
+GSM6265691_145615hp133a11.cel,NS02,Knee synovium ,Healthy
+GSM6265692_145616hp133a11.cel,NS03,Knee synovium ,Healthy
+GSM6265693_145617hp133a11.cel,NS04,Knee synovium ,Healthy
+GSM6265694_145618hp133a11.cel,NS05,Knee synovium ,Healthy
+GSM6265695_145621hp133a11.cel,NS08,Knee synovium ,Healthy
+GSM6265696_145623hp133a11.cel,NS10,Knee synovium ,Healthy
+GSM6265697_140041hp133a11.cel,OAS01,Knee synovium ,Arthritis
+GSM6265698_140042hp133a11.cel,OAS02,Knee synovium ,Arthritis
+GSM6265699_140046hp133a11.cel,OAS06,Knee synovium ,Arthritis
+GSM6265700_140047hp133a11.cel,OAS07,Knee synovium ,Arthritis
+GSM6265701_140048hp133a11.cel,OAS08,Knee synovium ,Arthritis
+GSM6265702_140049hp133a11.cel,OAS09,Knee synovium ,Arthritis
+GSM6265703_140050hp133a11.cel,OAS10,Knee synovium ,Arthritis
