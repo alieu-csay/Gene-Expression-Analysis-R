@@ -1,4 +1,0 @@
-"0","dotplot(enrich_up, showCategory=10) + ggtitle(""Upregulated Gene Ontology Enrichment Analysis"")"
-"2","Error in dotplot(enrich_up, showCategory = 10) : 
-  could not find function ""dotplot""
-"

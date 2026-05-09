@@ -1,3 +1,0 @@
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
-dotplot(enrich_up, showCategory=10) + ggtitle("Upregulated Gene Ontology Enrichment Analysis")
-install.packages("rlang")
