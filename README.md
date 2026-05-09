@@ -6,7 +6,7 @@ __Project Title__
 Differential Expression of Genes in Osteoarthritis (OA) and Normal Synovial Tissue
 
 Check the Full project:
-[https://alieu-csay.github.io/Gene-Expression-Analysis-R/](https://alieu-csay.github.io/Gene-Expression-Analysis-R/)
+https://alieu-csay.github.io/Gene-Expression-Analysis-R/
 
 Overview
 -----------------------------------------------------------------------------------------------------------------
