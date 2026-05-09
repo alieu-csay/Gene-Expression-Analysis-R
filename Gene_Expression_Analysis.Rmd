@@ -96,7 +96,6 @@ The boxplot represents the intensities/expression values after normalization.
 ```{r boxplot}
 boxplot(exprs(eset), main = "Expression data after normalisation", col = c("blue", "red"))
 ```
-
 Figure 1: Expression data after normalisation
 
 ## Principal Component Analysis (PCA)
@@ -114,7 +113,6 @@ fviz_pca_ind(pca_res,
              repel = TRUE,
              title = "PCA - Sample Clustering")
 ```
-
 Figure 2: PCA plot of samples based on gene expression. 
 
 # ANNOTATION
@@ -186,8 +184,7 @@ p <- ggplot(Res, aes(y = -log10(P.Value), x = logFC, text = paste("Gene:", SYMBO
 
 ggplotly(p, tooltip = "text")
 ```
-
-Figure 3: a volcanic Plot for DEGs
+Figure 3: A volcanic Plot for DEGs
 
 # ADVANCED VISUALISATION
 ## Heatmap of Top Upregulated and Downregulated Genes
@@ -229,7 +226,6 @@ pheatmap(gene_matrix,
          main = "Figure 4: Top Upregulated and Downregulated Genes",
          color = colorRampPalette(c("blue", "white", "red"))(100))
 ```
-
 Figure 4: Heatmap for the Top 25 Up-regulated and Down-regulated Genes
 
 # GENE ENRICHMENT ANALYSIS
