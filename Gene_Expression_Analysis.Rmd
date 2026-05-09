@@ -93,14 +93,15 @@ head(exprs(eset))
 ## Distribution Quality Control
 The boxplot represents the intensities/expression values after normalization.
 
-```{r boxplot, fig.cap="Expression data after normalisation"}
+```{r boxplot}
 boxplot(exprs(eset), main = "Expression data after normalisation", col = c("blue", "red"))
 ```
+Figure 1: Expression data after normalisation
 
 ## Principal Component Analysis (PCA)
 PCA allows us to visualize how samples group together. In a successful experiment, we expect samples from the same condition to cluster together.
 
-```{r pca_plot, fig.cap="PCA plot of samples based on gene expression."}
+```{r pca_plot}
 pca_data <- t(exprs(eset))
 pca_res <- prcomp(pca_data, scale. = TRUE)
 
@@ -112,6 +113,7 @@ fviz_pca_ind(pca_res,
              repel = TRUE,
              title = "PCA - Sample Clustering")
 ```
+Figure 2: PCA plot of samples based on gene expression. 
 
 # ANNOTATION
 Gene symbols, ENTREZID, and Gene names are added to our probes. We use the Affymetrix HG-U133_Plus_2 Array annotation data. We filter out duplicate probes and remove NAs to ensure a one-to-one mapping.
@@ -171,7 +173,7 @@ Res$delabel[Res$deff.express.gene != "NO"] <- Res$SYMBOL[Res$deff.express.gene !
 ## Interactive Volcano Plot
 Hover over specific dots to see the associated Gene Symbols.
 
-```{r volcano_plot_interactive, fig.cap="Interactive Volcano plot."}
+```{r volcano_plot_interactive}
 p <- ggplot(Res, aes(y = -log10(P.Value), x = logFC, text = paste("Gene:", SYMBOL)))+
   geom_point(aes(colour= deff.express.gene), alpha = 0.5) + 
   scale_colour_manual(values = c("UP" = "red", "NO" = "lightgrey", "DOWN" = "blue")) +
@@ -182,23 +184,49 @@ p <- ggplot(Res, aes(y = -log10(P.Value), x = logFC, text = paste("Gene:", SYMBO
 
 ggplotly(p, tooltip = "text")
 ```
+Figure 3: a volcanic Plot for DEGs
 
 # ADVANCED VISUALISATION
-## Heatmap of Top 50 DEGs
-This heatmap identifies the "expression signature" of Osteoarthritis among the top 50 most significant genes.
+## Heatmap of Top Upregulated and Downregulated Genes
+This heatmap identifies the expression signature of Osteoarthritis by visualizing the top 25 upregulated and top 25 downregulated genes based on log fold change.
 
-```{r heatmap, fig.height=10, fig.width=8, fig.cap="Heatmap of the top 50 most significant DEGs."}
-top50_genes <- head(Res[order(Res$adj.P.Val), ], 50)
-gene_matrix <- exprs(eset)[rownames(top50_genes), ]
-rownames(gene_matrix) <- top50_genes$SYMBOL
+```{r heatmap, fig.height=10, fig.width=8}
+# Filter for UP and DOWN genes
+up_genes <- subset(Res, deff.express.gene == "UP")
+down_genes <- subset(Res, deff.express.gene == "DOWN")
+
+# Select top 25 upregulated and top 25 downregulated genes sorted by absolute logFC
+up_heat <- head(up_genes[order(-up_genes$logFC), ], 25)
+down_heat <- head(down_genes[order(down_genes$logFC), ], 25)
+
+# Combine into a single dataframe
+top_heat <- rbind(up_heat, down_heat)
+
+gene_matrix <- exprs(eset)[rownames(top_heat), ]
+
+# Make Gene Symbols unique in case multiple probes map to the same gene
+unique_symbols <- make.unique(as.character(top_heat$SYMBOL))
+rownames(gene_matrix) <- unique_symbols
+
+# Create row annotations to indicate UP or DOWN
+gene_annotation <- data.frame(Direction = top_heat$deff.express.gene)
+rownames(gene_annotation) <- unique_symbols
+
+# Define custom colors for the annotations
+ann_colors <- list(
+  Direction = c(UP = "red", DOWN = "blue")
+)
 
 pheatmap(gene_matrix, 
          scale = "row", 
          clustering_distance_rows = "correlation",
          annotation_col = data.frame(Condition = targets$Condition, row.names = targets$Title),
-         main = "Top 50 Differentially Expressed Genes",
+         annotation_row = gene_annotation,
+         annotation_colors = ann_colors,
+         main = "Figure 4: Top Upregulated and Downregulated Genes",
          color = colorRampPalette(c("blue", "white", "red"))(100))
 ```
+Figure 4: Heatmap for the Top 25 Up-regulated and Down-regulated Genes
 
 # GENE ENRICHMENT ANALYSIS
 Gene enrichment analysis tells us whether our DEGs have over-represented biological functions. We use Gene Ontology (GO) categories: biological processes (BP), molecular mechanisms (MM), and cellular components (CC).
@@ -216,19 +244,34 @@ enrich_Down <- enrichGO(Down_genes, hgu133plus2.db, keyType = "SYMBOL", ont = "A
 ```
 
 ## Enrichment Results
-```{r dotplots}
+```{r dotplot_up}
 dotplot(enrich_up, showCategory=10) + ggtitle("Upregulated GO Enrichment")
-dotplot(enrich_Down, showCategory=10) + ggtitle("Downregulated GO Enrichment")
+
 ```
 
-# DISCUSSION 
-In this R pipeline, using bioinformatics analysis, in an attempt to know the molecular changes in OA. The results indicated that thousands of genes in OA synovial tissues have undergone molecular biological changes. The three most strongly significantly upregulated and downregulated genes were ACTA1, ADIPOQ, PLINI, and SOD2, CCDC88A, TPR respectively.
+Figure 5: Gene ontology Enrichment analysis for up-regulated Genes. 
 
-**ACTA1** was the most upregulated gene; it encodes skeletal muscle-actin, essential for muscle contraction. This gene might affect joint tissues or metabolism, potentially influencing the development of OA. **ADIPOQ** produces adiponectin and is associated with obesity, one of the strongest predictive factors for OA (Jiang et al. 2018).
+```{r dotplot_down}
+dotplot(enrich_Down, showCategory=10) + ggtitle("Downregulated GO Enrichment")
+
+```
+
+Figure 6: Gene ontology Enrichment analysis for Down-regulated Genes. 
+
+# DISCUSSION 
+In this R pipeline, using bioinformatics analysis, in an attempt to know the molecular changes in OA. The boxplot (Figure 1) of expression data after normalisation shows that the overall distribution of gene expression values across all samples is highly comparable. The median expression levels are aligned, and the interquartile ranges are similar across both osteoarthritis and healthy samples. This indicates that the normalisation process was effective in reducing technical variability and making the samples suitable for downstream analysis . Although some outliers remain, these are expected in gene expression datasets and likely represent biologically relevant variation rather than technical bias.(Evans et al. 2018)
+
+Principal Component Analysis (PCA) (Figure 2) was performed to explore the overall structure of the dataset and assess sample clustering based on gene expression profiles. The PCA plot demonstrates a clear separation between osteoarthritis and healthy samples along the first principal component (Dim1), which explains 19.6% of the variance. Samples from the same condition cluster closely together, indicating consistent transcriptional profiles within each group and strong biological differences between conditions.
+
+The distinct clustering suggests that osteoarthritis is associated with significant transcriptional changes compared to healthy synovial tissue. While there is some spread within each group, likely reflecting biological variability among individuals, the overall separation confirms that condition is a major driver of variation in the dataset
+
+The results indicated that thousands of genes in OA synovial tissues have undergone molecular biological changes. The three most strongly significantly upregulated and downregulated genes were ACTA1, ADIPOQ, PLINI, and SOD2, CCDC88A, TPR respectively (Figure 3 and 4).
+
+**ACTA1** was the most upregulated gene (Figure 3); it encodes skeletal muscle-actin, essential for muscle contraction. This gene might affect joint tissues or metabolism, potentially influencing the development of OA. **ADIPOQ** produces adiponectin and is associated with obesity, one of the strongest predictive factors for OA (Jiang et al. 2018).
 
 **SOD2** was the most significantly downregulated gene. Chondrocytes produce antioxidant enzymes encoded by SOD2 to prevent cartilage degradation caused by Reactive Oxygen Species (ROS). The downregulation of SOD2 suggests less control of ROS levels in synovium tissues, leading to cartilage degradation and OA progression (Scott et al. 2010).
 
-The GO enrichment analysis confirmed that the pathogenesis of osteoarthritis is the result of multiple factors related to membrane protein complexes, endosomes, transport, and metabolic processes (Huang et al. 2018).
+The GO enrichment analysis (Figure 5 And 6) confirmed that the pathogenesis of osteoarthritis is the result of multiple factors related to membrane protein complexes, endosomes, transport, and metabolic processes (Huang et al. 2018).
 
 # REFERENCES
 1. Kaplon, H., et al. (2021) Applications of transcriptomics in osteoarthritis. *Osteoarthritis and Cartilage Open* 3(4).
@@ -246,3 +289,4 @@ The GO enrichment analysis confirmed that the pathogenesis of osteoarthritis is 
 13. Scott, J.L., et al. (2010) Superoxide dismutase downregulation in OA. *Ann. Rheum. Dis.* 69(8).
 14. Yeremenko, N., et al. (2012) Disease‐specific stromal alterations. *Arthritis & Rheumatism* 65(1).
 15. Jiang, L., et al. (2018) Obesity, osteoarthritis and genetic risk. *Bone & Joint Research* 7(7).
+16. Evans, C., Hardin, J. and Stoebel, D.M. (2018) Selecting between-sample RNA-Seq normalization methods from the perspective of their assumptions. *Briefings in bioinformatics* 19 (5), 776–792.

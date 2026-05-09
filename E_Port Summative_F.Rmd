@@ -1,0 +1,336 @@
+
+# **DIFFERENTIAL EXPRESSION OF GENES IN OSTEOARTHRITIS AND NORMAL SYNOVIAL TISSUE.**
+
+
+# BACKGROUND.
+
+Osteoarthritis (OA) is a disease that is a burden to global health, affecting 528 million in 2019, which is increasing every year, this number has increased by 113% since 1990, nearly within three decades (World Health Organization: WHO 2023). The prevalence of Osteoarthritis is not very general, it is dependent on a lot of factors like gender, work type, age, and social life. Knee Osteoarthritis contributes to 85% of the other types of Osteoarthritis worldwide (Hunter and Bierma-Zeinstra 2019).
+
+The high-risk population for Osteoarthritis is the elderly, obese, genetic makeup, and people with a high number of knee joint injuries (CDC 2023. In addition for people who are at risk for Knee Osteoarthritis, (Hunter and Bierma-Zeinstra 2019) stated that risk factors such as being female, being obese, and having had previous knee injuries are considered moderate to strong risk factors. People involved in work activities involving heavy lifting and kneeling are also at risk for knee Osteoarthritis (CDC 2023). Some sports activities like football, hockey, wrestling, and heavy lifting put athletes at high risk of knee injuries which are associated with knee Osteoarthritis (Thelin et al. 2005). Osteoarthritis, in general, is not highly induced by our genetic makeup, however, it contributes to 40% to 80% of all Osteoarthritis cases, with Knee Osteoarthritis representing the lowest percentage among the other types of OA (Hunter and B,ierma-Zeinstra 2019). 
+
+Although the etiology of the disease is still unknown, it is widely accepted that these degenerative changes arise from an imbalance of synthetic and degradative pathways that control cartilage and synovium extracellular matrix metabolism (Bijlsma et al. 2011). OA affects the entire joint which includes the synovial membrane and it is a heterogeneous disease involving overlapping pathways, depending on the risk factors associated with the OA, however, the outcome of the joint destruction is the same (Hunter and Bierma-Zeinstra 2019). The synovium contributes to the pathogenesis of OA. Some clinical symptoms of OA reflect the synovium inflammation, implicating it as a low-grade contributor to OA (Krasnokutsky et al. 2008). ). The pathogenesis of OA involves mechanical, inflammatory, and metabolic factors, which lead to structural destruction and failure of the synovial fluid (Hunter and Bierma-Zeinstra 2019). Synovitis can occur in the early stages of OA, a study done by (Listrat et al. 1997) shows that 50% of OA patients have localized proliferative and inflammatory changes of the synovium. The main symptom of Knee Osteoarthritis is pain function disability (Bijlsma et al. 2011)
+
+As of 2021, there has been no known curative treatment for OA. Because of the complexity of how OA manifests, many disease-modifying osteoarthritis drugs have been unsuccessful (Kaplon et al. 2021). However, key treatment approaches for OA are education and self-management, exercise, weight loss if obese, and work aid. Pain medications are being used for OA management, to reduce pain, as is the main symptom of OA. Paracetamol and NSAIDs are some of the pain medications used. Furthermore, joint replacement surgery is also a treatment strategy used. For example, NGF (Nerve Growth Factor) has been under development for decades and has shown promising results (Hunter and Bierma-Zeinstra 2019).
+
+Transcriptome is a term for the whole set of RNAs transcribed by the genome from a specific tissue or cell type at a developmental stage and/or under a certain physiological condition (Dong and Chen 2013). In understanding OA, its cause, and a possible cure, transcriptomic has made great progress in the level of gene expression in the blood or a target tissue at the whole transcriptomic level. There are many quantitative transcriptomic methods used in OA study cases using related tissue or blood, all to provide insight into the relative molecular change, differently expressed genes, and protein pathways between a normal sample and a sample with OA (Kaplon et al. 2021). All this information helps us to identify compounds to reverse these changes and processes, looking for a compound that can induce strong opposing genes to reverse the molecular change and processes. For example, a study done by (Steinberg et al. 2021) characterized the molecular difference between low-grade and high-grade cartilage in OA to identify compounds capable of reversing the molecular change and help with a new treatment approach.
+
+In this work, microarray Technology was used, which is a type of transcriptomic analysis that relies on synthetic oligonucleotides spotted on a microchip to assess the expression of genes and allow the identification of differentially expressed genes. The technology can detect species and transcripts-specific gene expression (Kaplon et al. 2021). 
+
+
+# METHOD
+
+This portfolio will discuss the concepts of Osteoarthritis and build an R pipeline to analyze microarray data done and published on GEO (Gene Expression Omnibus) on 1st August 2022. The data was to investigate the expression pattern in non-osteoarthritis (normal) and synovium obtained from OA and rheumatoid arthritis (RA) patients undergoing knee replacement surgery. we will perform differential gene expression analysis to identify genes that show significant differential expression between Osteoarthritis and Normal samples. This data was generated by Attur M and Abramson SB, to understand the disease's molecular basis better and provide relevant insight into phenotypical alterations and mechanisms involved in OA and rheumatoid arthritis.
+
+Our transcripts are in CEL files, this is a data structure from a GeneChip microarray experiment (Affymetrix). Cel files are a very simple data structure that primarily stores all the probe intensities for a single gene chip (Gautier et al. 2004).
+
+we will use limma package from BioConductor for the Differential expression, BioConductor is an open-source and open-development project to support the analysis of genomic data using R language. It helps in a solid workflow and analysis of biological data, like transcriptomic data (Wilson and Miller 2005). 
+
+### PRE-PROCESSING
+
+This step is very vital for the Differential expression analysis. This is where the data is processed before the differential expression.
+
+
+### DOWNLOADING AND LOADING REQUIRED PACKAGES 
+
+```{r setup, }
+#Downloading and Loading Required Packages
+
+#if (!require("BiocManager", quietly = TRUE))
+   #install.packages("BiocManager")
+
+#From the Bioconductor
+#BiocManager::install("affy")
+#BiocManager::install("limma")
+#BiocManager::install("hgu133plus2.db")
+#BiocManager::install("AnnotationDbi")
+##BiocManager::install("clusterProfiler", version = "3.18")
+#BiocManager::install("pathview")
+#BiocManager::install("enrichplot")
+
+#CRAN packages
+#install.packages("ggplot2")
+#install.packages("pheatmap")
+
+
+#Loading the librarys 
+library(affy)
+library(limma)
+library(ggplot2)
+library(hgu133plus2.db)
+library(AnnotationDbi)
+library(clusterProfiler)
+library(enrichplot)
+library(pheatmap)
+
+
+
+```
+
+### LOADING TARGETS FILE 
+
+Firstly, we load the target files using the readTarget() function from the limma package. The Targets file is in a txt file and describes the design of the experiment. 
+
+```{r}
+#loading our target file 
+targets <- readTargets("/Users/ALIEU CSAY/Desktop/Masters Bioinformatics/Principles of Bioinformatics/E-portfolio/E_portfolio_ass/data .txt")
+```
+
+### BACKGROUND CORRECTION AND NORMALISATION.
+
+We use the justRMA () function in affy package for the background correction and normalization of our raw CEL files and save them as an Expressionset (eset). From the microarray experiment, the chip detects some amount of background noise. Therefore, the background correction algorithm of RMA estimates background noise by convoluting signals and noise distribution. Furthermore, the overall distribution of probe intensities differs slightly from chip to chip of the same sample. Therefore, we normalize to detect and correct systematic differences between chips. The function loads the CEL files, background corrections, normalizes intensities or log ratios to be comparable across arrays, and calculates expression (Wilson and Miller 2005). The column names were set to Title, which are short sample names, NS for Healthy samples, and OA for Arthritis with numbers attached.
+
+```{r}
+#Loading the data and Normalisation 
+
+eset <- justRMA(filenames = targets$Sample_ID, celfile.path = "/Users/ALIEU CSAY/Desktop/Masters Bioinformatics/Principles of Bioinformatics/E-portfolio/E_portfolio_ass/input/")
+
+#Setting the coloum names to Title
+
+colnames(eset) <- targets$Title
+
+```
+
+### ANNOTATION
+
+The probes_ids alone cannot tell us much therefore we annotate to add useful information to our probes; gene symbols, ENTREID, and Gene name. We use the Affymetrix HG-U133_Plus_2 Array annotation data (chip hgu133plus) to annotate, this was used as the platform for this experiment. We use the AnnotateDbi::seclect function from the AnnotateDbi package to get the information base on our probe list in "Alias". We store our annotated data in f(Data). 
+To ensure one-to-one mapping of probes and gene symbols, we checked for duplicate probes, which were assigned with two different gene symbols, and removed the duplicates.NAs for probes that were not assigned a symbol from our annotation were removed. 
+
+
+```{r }
+#Annotation 
+
+Alias <- rownames(exprs(eset))
+fData(eset) <- AnnotationDbi::select(hgu133plus2.db,Alias,c("SYMBOL","ENTREZID","GENENAME"),keytype="PROBEID")
+
+#Identify duplicated probe IDs in the feature data
+duplicated_probes <- fData(eset)$PROBEID[duplicated(fData(eset)$PROBEID)]
+
+
+# filtering out duplicated probes 
+fData(eset) <- fData(eset)[!duplicated(fData(eset)$PROBEID),]
+
+# Removing NA using symbol 
+HasSymbol <- !is.na(fData(eset)$SYMBOL)
+eset <- eset[HasSymbol, ]
+
+
+```
+
+## DIFFERENTIAL EXPRESSION 
+
+The data is set now for differential expression.
+
+We first do a design model matrix with the test (Arthritis) and control (Healthy) samples. This design mode matrix allows us to do the differential expression. 
+We then fit using the Imfit() function from the limma package.  This function fits the linear model for every row of expression matrix and it is equal to a simple t-test. This is a response to a common model of independent variables (Healthy, Arthritis) (Ritchie et al. 2015). 
+We do a contrast with the makeContrasts() function between our sample conditions which are Arthritis and Healthy samples using the design. We then apply the contrast to our fit data using contrast.fit() function from the limma library and Package. 
+The Empirical Bayes correct is performed using the eBayes() function from the limma package. This algorithm calculates a robust test by borrowing information about the distribution across the genes using the fit2 data (Ritchie et al. 2015). 
+We use the topTable() function to extract our differentially expressed genes, this function will arrange the genes in a table with the “B” statistics which is the log odds of the differential expression. finally we add a coloum to classify our genes as up regulated or downregulated, setting our adjusted p value to >0.08 and loadfold change of > 0 for upregulated and adjusted p value to >0.08 and loadfold change of < 0 for Downregulated.
+
+```{r }
+#Differential expression 
+
+#Generating a model matrix specifying your design 
+Group <- factor(targets$Condition, levels = c("Healthy", "Arthritis"))
+design <- model.matrix(~0 + Group)
+colnames(design) = levels(factor(Group))
+
+#Fit the model to the design 
+fit <- lmFit(eset, design)
+
+#Making contrast
+contrast <- makeContrasts('Arthritis-Healthy', levels = design)
+
+#Empirical Bayes model
+fit2 <- contrasts.fit(fit, contrast)
+fit2 <- eBayes(fit2)
+
+#Extracting our differential expressed results
+Res <- topTable(fit2, number=Inf, adjust.method = 'fdr')
+
+# Summary of our results
+Results <- decideTests(fit2)
+
+#creating a new coloum to classify our genes as upregulated or downregulated.
+
+Res$deff.express.gene <- "NO"
+# if log2FC > 0 and adj.pvalue < 0.08, set as "UP" 
+Res$deff.express.gene[Res$logFC > 0 & Res$adj.P.Val < 0.08] <- "UP"
+# if log2FC < 0 and adj.pvalue < 0.08, set as "DOWN"
+Res$deff.express.gene[Res$logFC < 0 & Res$adj.P.Val < 0.08] <- "DOWN"
+
+Res$delabel <- NA
+
+Res$delabel[Res$deff.express.gene != "NO"] <- Res$SYMBOL [Res$deff.express.gene != "NO"]
+
+```
+
+## GENE ENRICHMENT ANALYSIS
+
+Gene enrichment analysis is to know whether our genes that are differentially expressed have over-represented known biological functions or processes. We use the enrichGO() function from the clusterprofiler package. Gene ontology (GO) consists of three categories: biological processes (BP), molecular mechanisms (MM), and cellular components(CC). In this work, we select “ALL” for the ontology.
+
+```{r}
+#GO Gene Enrichment Analysis for the differential expressed gene
+
+#Define our universe gene symbols (total gene symbols differential expressed)
+Universe <- Res$SYMBOL
+
+#Define genes symbols that are upregulated or downregulated
+Up_genes <- Res$SYMBOL[Res$deff.express.gene == "UP"]
+Down_genes <- Res$SYMBOL[Res$deff.express.gene == "DOWN"]
+
+#Enrichment analysis of upregulated genes
+
+enrich_up <- enrichGO(
+  Up_genes,
+  hgu133plus2.db,
+  keyType = "SYMBOL",
+  ont = "ALL",
+  pvalueCutoff = 0.05,
+  pAdjustMethod = "BH",
+  qvalueCutoff = 0.2,
+  Universe,
+  minGSSize = 10,
+  maxGSSize = 1000,
+  readable = FALSE,
+  pool = FALSE
+)
+
+#Enrichment analysis of Downregulated genes
+enrich_Down <- enrichGO(
+  Down_genes,
+  hgu133plus2.db,
+  keyType = "SYMBOL",
+  ont = "ALL",
+  pvalueCutoff = 0.05,
+  pAdjustMethod = "BH",
+  qvalueCutoff = 0.2,
+  Universe,
+  minGSSize = 10,
+  maxGSSize = 1000,
+  readable = FALSE,
+  pool = FALSE
+)
+
+```
+
+# RESULTS
+
+###CHECKING OUR EXPRESSION VALUES AND NORMALIZATION RESULTS
+
+This results shows the targets file, first six probe ids with their expression values and column  names as tittle. The boxplot represents the intensities/expression values after normalization.
+
+```{r}
+#showing our target file 
+targets
+#viewing our expression data 
+head(exprs(eset))
+
+#Boxplot of of our expression data after normalisation 
+boxplot(exprs(eset), main = "Expression data after normalisation", col = c("blue", "red"))
+```
+
+### RESULTS FOR ANNOTATION
+
+This results shows the results if our annotation. 
+
+```{r}
+#list our keytypes
+keytypes(hgu133plus2.db)
+#viewing our annotated data 
+head(fData(eset))
+#viewing our Duplicates probes
+head(duplicated_probes)
+#showing summary of our logic report
+table(HasSymbol)
+#checking the dimension for the eset 
+dim(eset)
+```
+
+### RESULTS FOR DIFFERENTIAL EXPRESSION
+
+This results shows the first six genes differential expressed with it statistical values, the summary of the results as in number of genes upregulted or dowregulated or non of the two, and finally we plot a volcano plot to represent our overall DEGs results, showing gene symbols for genes with logFC < -1 | logFC >  1.  
+
+```{r}
+#Viewing the differential expression results
+head(Res)
+#showing the summary of the results. 
+summary(Results)
+#MD plot for our results, for the distribution of our DEGs
+plotMD(fit2, coef="Arthritis-Healthy", status=Results, main = "MD plot for the DEGs expression")
+#Volcano plot Differential expressed gene
+ggplot(Res, aes(y = -log10(P.Value), x = logFC))+
+geom_text(data = subset(Res, logFC < -1 | logFC >  1),aes(label = delabel),nudge_y = 0.3, size = 2) +
+geom_point() + labs(y = "-log10(p-value)", x = "log2(Fold Change)") +
+ggtitle("Volcano Plot for DEGs") +
+geom_point(aes(colour= Res$deff.express.gene)) +
+scale_colour_manual(values = c("red","yellow","blue")) +
+geom_vline(xintercept = c(-1, 1), colour = "red" ) +
+geom_hline(yintercept = -log10(0.08), colour = "green")+
+theme_minimal() 
+
+```
+
+### RESULTS FOR GENE ENRICHMENT ANALYSIS.
+
+This Results shows us our gene enrichment analysis of the DEGs.
+
+
+```{r}
+#Enrichment Annalysis
+
+#For upregulated genes
+p2 <- dotplot(enrich_up, showCategory=10) + ggtitle("Upregulated Gene ontolgy Enrichment analysis")
+
+p2
+
+#For downregulated genes 
+p3 <- dotplot(enrich_Down, showCategory=10) + ggtitle("Downregulated Gene ontolgy Enrichment analysis")
+p3
+```
+
+
+# DISCUSSION 
+
+In this R pipeline, using bioinformatics analysis, in an attempt to know the molecular changes in OA. The results indicated that thousands of genes in OA synovial tissues have undergone molecular biological changes, with 3863 DEGs determined, including 1407 upregulated and 2456 downregulated genes, compared with normal synovial tissues. The three most strongly significantly upregulated genes and downregulated genes were ACTA1, ADIPOQ, PLINI, and SOD2, CCDC88A, TPR respectively. A study that compares differentially expressed transcripts of osteoarthritis and rheumatoid arthritis has these same top three upregulated genes (Yeremenko et al. 2012). 
+
+ACTA1 was the most upregulated gene; it encodes skeletal muscle-actin, which is the predominant actin isoform in the Sarcomeric thin filaments of adult skeletal muscle, essential, along with myosin, for muscle contraction. This gene is largely associated with congenital myopathies; the symptoms of this disease like muscle weakness and imbalance, morbidity challenge, and genetic factors (Laing et al. 2009), might also affect joint tissues or metabolism, potentially influencing the development of OA. ADIPOQ produces adiponectin and causes obesity, which is one of the strongest predictive and prognostic factors for OA (Jiang et al. 2018).
+
+SOD2, In Genecard, encodes a mitochondrial protein that forms a homotetramer and binds one manganese ion per subunit. Gene Ontology (GO) annotations related to this gene include identical protein binding and oxygen binding. It is normally associated with muscular complications of diabetes and Gastric Cancer. However, SOD2 has been shown to be downregulated in OA cartilage. Reactive Oxygen species (ROS) is expressed by chondrocytes. ROS generate derivatives like the peroxynitrite (ONOO−) and hydroxyl radicals (OH-), which are highly aggressive and cause cartilage degradation. To prevent ROS accumulated damage, chondrocytes produce antioxidant enzymes encoded by SOD2, which catalyze the dis-mutation of superoxide anion (O2*_) to O2 and H2O2, limiting cartilage degradation caused by the aggressive compounds of ROS (Scott et al. 2010). As the most significantly Downregulated gene in this analysis, it shows less control of ROS level in our synovium tissues, leading to cartilage degradation and OA. 
+
+The GO enrichment analysis revealed that the DEGs were mainly involved in pathways related to, membrane protein complex, endosome, transport complex, cation channel complex, ,ATPase complex, RNA Processing, mRNA metabolic processes and protein-DNA complex organization. These results confirmed that the pathogenesis of osteoarthritis is the result of multiple factors and genes in the synovium that, directly or indirectly, lead to the occurrence and development of osteoarthritis (Huang et al. 2018). 
+
+# REFERENCES
+
+1.Kaplon, H., Luo, Y., De Ceuninck, F., Lalande, A., Courtade-Gaiani, S., Laigle, L. and Moingeon, P. (2021) Applications of transcriptomics in support of drug development for osteoarthritis. Osteoarthritis and Cartilage Open 3 (4), 100221.
+
+2. Dong, Z. and Chen, Y. (2013) Transcriptomics: Advances and approaches. Science China Life Sciences 56 (10), 960–967.
+Wilson, C.L. and Miller, C.J. (2005) Simpleaffy: a BioConductor package for Affymetrix Quality Control and data analysis. Bioinformatics 21 (18), 3683–3685.
+
+3. Gautier, L., Cope, L., Bolstad, B.M. and Irizarry, R.A. (2004) affy—analysis of Affymetrix GeneChip data at the probe level. Bioinformatics 20 (3), 307–315.
+
+4. Thelin, N., Holmberg, S. and Thelin, A. (2005) Knee injuries account for the sports‐related increased risk of knee osteoarthritis. Scandinavian Journal of Medicine &amp; Science in Sports 16 (5), 329–333.
+
+5. CDC (2023) Arthritis Risk Factors. https://www.cdc.gov/arthritis/basics/risk-factors.htm Accessed 4 December 2023.
+World Health Organization: WHO (2023) Osteoarthritis. World Health Organization: WHO 14 July.
+
+6. Hunter, D.J. and Bierma-Zeinstra, S. (2019) Osteoarthritis. The Lancet 393 (10182), 1745–1759.
+Bijlsma, J.W., Berenbaum, F. and Lafeber, F.P. (2011) Osteoarthritis: an update with relevance for clinical practice. The Lancet 377 (9783), 2115–2126.
+
+7. Steinberg, J., Southam, L., Roumeliotis, T.I., Clark, M.J., Jayasuriya, R.L., Swift, D., Shah, K.M., Butterfield, N.C., Brooks, R.A., McCaskie, A.W., Bassett, J.H.D., Williams, G.R., Choudhary, J.S., Wilkinson, J.M. and Zeggini, E. (2021) A molecular quantitative trait locus map for osteoarthritis. Nature Communications 12 (1),.
+
+8. Krasnokutsky, S., Attur, M., Palmer, G., Samuels, J. and Abramson, S.B. (2008) Current concepts in the pathogenesis of osteoarthritis. Osteoarthritis and Cartilage 16, S1–S3.
+
+9. Listrat, V., Ayral, X., Patarnello, F., Bonvarlet, J.-P., Simonnet, J., Amor, B. and Dougados, M. (1997) Arthroscopic evaluation of potential structure modifying activity of hyaluronan (Hyalgan®) in osteoarthritis of the knee. Osteoarthritis and Cartilage 5 (3), 153–160.
+
+10. Huang, H., Zheng, J., Shen, N., Wang, G., Zhou, G., Fang, Y., Lin, J. and Zhao, J. (2018) Identification of pathways and genes associated with synovitis in osteoarthritis using bioinformatics analyses. Scientific Reports 8 (1), .
+
+11. Laing, N.G., Dye, D.E., Wallgren-Pettersson, C., Richard, G., Monnier, N., Lillis, S., Winder, T.L., Lochmüller, H., Graziano, C., Mitrani-Rosenbaum, S., Twomey, D., Sparrow, J.C., Beggs, A.H. and Nowak, K.J. (2009b) Mutations and polymorphisms of the skeletal muscle Î±-actin gene (ACTA1). Human Mutation 30 (9), 1267–1277.
+
+12. Scott, J.L., Gabrielides, C., Davidson, R.K., Swingler, T.E., Clark, I.M., Wallis, G.A., Boot-Handford, R.P., Kirkwood, T.B.L., Talyor, R.W. and Young, D.A. (2010) Superoxide dismutase downregulation in osteoarthritis progression and end-stage disease. Annals of the Rheumatic Diseases 69 (8), 1502–1510.
+
+13. Yeremenko, N., Noordenbos, T., Cantaert, T., van Tok, M., van de Sande, M., Cañete, J.D., Tak, P.P. and Baeten, D. (2012) Disease‐specific and inflammation‐independent stromal alterations in spondylarthritis synovitis. Arthritis &amp; Rheumatism 65 (1), 174–185.
+
+14. Jiang, L., Zhu, X., Rong, J., Xing, B., Wang, S., Liu, A., Chu, M. and Huang, G. (2018) Obesity, osteoarthritis and genetic risk. Bone &amp; Joint Research 7 (7), 494–500.
+
+
+
